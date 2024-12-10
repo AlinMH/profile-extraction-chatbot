@@ -104,6 +104,10 @@ class Education(BaseModel):
     """The year the user graduated."""
     graduation_year: int
 
+    @classmethod
+    def empty_instance(cls):
+        return cls(degree="", institution="", graduation_year=0)
+
     def is_empty(self) -> bool:
         """Check if the education instance is empty (all fields are empty)."""
 
