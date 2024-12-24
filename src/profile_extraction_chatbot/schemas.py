@@ -15,11 +15,9 @@ class ResponseToUser(BaseModel):
     user_profile: UserProfile
 
 
-
 class UserProfile(BaseModel):
     """The user profile schema, which includes fields for the user's name, age, location, education,
     and professional experiences."""
-
 
     """The user's full name."""
     name: str
