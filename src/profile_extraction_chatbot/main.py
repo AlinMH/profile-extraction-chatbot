@@ -5,14 +5,13 @@ from fastapi.responses import HTMLResponse
 from fastapi.websockets import WebSocket
 from pydantic_ai import Agent
 
-from profile_extraction_chatbot import constants
-from profile_extraction_chatbot.schemas import UserProfile, ResponseToUser
+from . import constants, schemas
 
 app = FastAPI()
 
-agent: Agent[None, ResponseToUser] = Agent(
+agent = Agent(
     "gemini-1.5-flash",
-    result_type=ResponseToUser,
+    result_type=schemas.ResponseToUser,
     system_prompt=constants.SYSTEM_PROMPT,
     retries=5,
 )
@@ -34,7 +33,7 @@ async def chatbot_websocket(websocket: WebSocket):
     # Send welcome message to the user.
     await websocket.send_text(constants.WELCOME_MESSAGE)
 
-    current_user_profile = UserProfile.empty_instance()
+    current_user_profile = schemas.UserProfile.empty_instance()
     current_score = 0
     message_history = []
     async for data in websocket.iter_text():
