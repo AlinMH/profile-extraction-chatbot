@@ -5,9 +5,21 @@ from pydantic import BaseModel
 from profile_extraction_chatbot import constants
 
 
+class ResponseToUser(BaseModel):
+    """The agent's structured message to the user."""
+
+    """The agent's message to the user."""
+    message: str
+
+    """The user's profile."""
+    user_profile: UserProfile
+
+
+
 class UserProfile(BaseModel):
     """The user profile schema, which includes fields for the user's name, age, location, education,
     and professional experiences."""
+
 
     """The user's full name."""
     name: str

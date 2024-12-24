@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Union
 
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
@@ -7,14 +6,13 @@ from fastapi.websockets import WebSocket
 from pydantic_ai import Agent
 
 from profile_extraction_chatbot import constants
-from profile_extraction_chatbot.schemas import UserProfile
+from profile_extraction_chatbot.schemas import UserProfile, ResponseToUser
 
 app = FastAPI()
-ResultType = Union[UserProfile, str]
 
-agent: Agent[None, ResultType] = Agent(
+agent: Agent[None, ResponseToUser] = Agent(
     "gemini-1.5-flash",
-    result_type=ResultType,
+    result_type=ResponseToUser,
     system_prompt=constants.SYSTEM_PROMPT,
     retries=5,
 )
@@ -46,20 +44,16 @@ async def chatbot_websocket(websocket: WebSocket):
                 user_prompt=constants.PROFILE_SUMMARY_PROMPT,
                 message_history=message_history,
             )
-            await websocket.send_text(f"{result.data}")
+            await websocket.send_text(f"{result.data.message}")
             await websocket.close()
             break
 
         result = await agent.run(user_prompt=data, message_history=message_history)
         message_history.extend(result.new_messages())
 
-        if isinstance(result.data, UserProfile):
-            current_score = result.data.compute_completeness_score()
-            current_user_profile = result.data
-            await websocket.send_text(
-                f"Profile completeness score: {current_score}\n{current_user_profile}"
-            )
-        else:
-            await websocket.send_text(
-                f"{result.data} \nProfile completeness score: {current_score}\n{current_user_profile}"
-            )
+        current_score = result.data.user_profile.compute_completeness_score()
+        current_user_profile = result.data.user_profile
+        await websocket.send_text(
+            f"{result.data.message}\n"
+            f"Profile completeness score: {current_score}\n{current_user_profile}"
+        )
